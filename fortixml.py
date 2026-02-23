@@ -109,12 +109,11 @@ with st.form("xml_form", border=True):
                     max_value=65535,
                     value=int(DEFAULTS["var_ike_saml_port"]),
                     step=1,
-                )
-            
-    else:
-        # Not relevant => force safe defaults in XML
-        var_use_external_browser_bool = False
-        var_ike_saml_port = int(DEFAULTS["var_ike_saml_port"])  # or 443; it won't matter if SSO=0
+                ) 
+        else:
+            # Not relevant => force safe defaults in XML
+            var_use_external_browser_bool = False
+            var_ike_saml_port = int(DEFAULTS["var_ike_saml_port"])  # or 443; it won't matter if SSO=0
 
     with tab_ipsec:
         var_preshared_key = st.text_input("Preshared key", value=DEFAULTS["var_preshared_key"], type="password")
