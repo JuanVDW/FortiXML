@@ -150,18 +150,20 @@ if submitted:
     safe_name = "".join(c if c.isalnum() or c in "-_." else "_" for c in var_name.strip())
     filename = f"{safe_name or 'config'}_{ts}.xml"
 
-col_title, col_btn = st.columns([5, 2])
+    # --- Preview title + Download button on same line ---
+    col_title, col_btn = st.columns([5, 2])
 
-with col_title:
-    st.markdown("### XML Preview")
+    with col_title:
+        st.markdown("### XML Preview")
 
-with col_btn:
-    st.download_button(
-        "⬇️ Download XML",
-        rendered_xml.encode("utf-8"),
-        file_name=filename,
-        mime="application/xml",
-        use_container_width=True,
-    )
+    with col_btn:
+        st.download_button(
+            label="⬇️ Download XML",
+            data=rendered_xml.encode("utf-8"),
+            file_name=filename,
+            mime="application/xml",
+            use_container_width=True,
+        )
 
-st.code(rendered_xml, language="xml")
+    # XML preview below
+    st.code(rendered_xml, language="xml")
