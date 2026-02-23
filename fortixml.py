@@ -53,7 +53,7 @@ DEFAULTS = {
     "var_description": "IPSec VPN for Acme IT grp",
     "var_server": "acme.vpn.com",
     "var_preshared_key": "",
-    "var_sso_enabled": 1,            # yes
+    "var_sso_enabled": 0,            # no
     "var_ike_saml_port": 443,
     "var_use_external_browser": 0,   # no
     "var_networkid": 10,
@@ -80,25 +80,41 @@ with st.form("xml_form", border=True):
         )
 
     with tab_auth:
-        c1, c2 = st.columns(2)
-        with c1:
-            var_sso_enabled_bool = st.toggle(
-                "SSO enabled",
-                value=bool(DEFAULTS["var_sso_enabled"]),
-                help="Stored as 1 (yes) / 0 (no)",
-            )
-        with c2:
-            var_use_external_browser_bool = st.toggle(
-                "Use external browser",
-                value=bool(DEFAULTS["var_use_external_browser"]),
-            )
-
-        var_ike_saml_port = st.number_input(
-            "IKE SAML port",
-            min_value=1,
-            max_value=65535,
-            value=int(DEFAULTS["var_ike_saml_port"]),
+        auth_type = st.selectbox(
+            "Authentication type",
+            ["Local", "LDAP", "RADIUS", "SAML"],
+            index=0,
         )
+    
+        is_saml = (auth_type == "SAML")
+    
+        # SSO enabled flag driven by auth_type:
+        # Local/LDAP/RADIUS => 0
+        # SAML => 1
+        var_sso_enabled_bool = is_saml  # keep as bool for your yn_to_01()
+    
+        # Only show these when SAML is selected
+        if is_saml:
+            c1, c2 = st.columns(2)
+            with c1:
+                var_use_external_browser_bool = st.toggle(
+                    "Use external browser",
+                    value=bool(DEFAULTS["var_use_external_browser"]),
+                    help="Stored as 1 (yes) / 0 (no)",
+                )
+            with c2:
+                var_ike_saml_port = st.number_input(
+                    "IKE SAML port",
+                    min_value=1,
+                    max_value=65535,
+                    value=int(DEFAULTS["var_ike_saml_port"]),
+                    step=1,
+                )
+            
+    else:
+        # Not relevant => force safe defaults in XML
+        var_use_external_browser_bool = False
+        var_ike_saml_port = int(DEFAULTS["var_ike_saml_port"])  # or 443; it won't matter if SSO=0
 
     with tab_ipsec:
         var_preshared_key = st.text_input("Preshared key", value=DEFAULTS["var_preshared_key"], type="password")
