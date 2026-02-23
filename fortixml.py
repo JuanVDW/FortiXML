@@ -153,10 +153,10 @@ if submitted:
     # --- Preview title + Download button on same line ---
     col_title, col_btn = st.columns([5, 2])
 
-with col_title:
+    with col_title:
         st.markdown("### XML Preview")
 
-with col_btn:
+    with col_btn:
     st.markdown("""
     <style>
     div[data-testid="stDownloadButton"] > button {
