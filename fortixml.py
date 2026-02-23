@@ -98,30 +98,31 @@ with st.form("xml_form", border=True):
         is_saml = (auth_key == "saml")
         var_sso_enabled_bool = is_saml
     
-        saml_area = st.empty()  # dynamic area that we can clear
+        # --- Always render, but disable when not SAML (prevents "ghosting") ---
+        c1, c2 = st.columns(2)
     
-        if is_saml:
-            with saml_area.container():
-                c1, c2 = st.columns(2)
-                with c1:
-                    var_use_external_browser_bool = st.toggle(
-                        "Use external browser",
-                        value=bool(DEFAULTS["var_use_external_browser"]),
-                        help="Stored as 1 (yes) / 0 (no)",
-                        key="use_external_browser",
-                    )
-                with c2:
-                    var_ike_saml_port = st.number_input(
-                        "IKE SAML port",
-                        min_value=1,
-                        max_value=65535,
-                        value=int(DEFAULTS["var_ike_saml_port"]),
-                        step=1,
-                        key="ike_saml_port",
-                    )
-        else:
-            # Clear the area (hides UI) and force safe values
-            saml_area.empty()
+        with c1:
+            var_use_external_browser_bool = st.toggle(
+                "Use external browser",
+                value=bool(DEFAULTS["var_use_external_browser"]),
+                help="Only relevant for SAML",
+                key="use_external_browser",
+                disabled=not is_saml,
+            )
+    
+        with c2:
+            var_ike_saml_port = st.number_input(
+                "IKE SAML port",
+                min_value=1,
+                max_value=65535,
+                value=int(DEFAULTS["var_ike_saml_port"]),
+                step=1,
+                key="ike_saml_port",
+                disabled=not is_saml,
+            )
+    
+        # Force safe values in XML when not SAML
+        if not is_saml:
             var_use_external_browser_bool = False
             var_ike_saml_port = int(DEFAULTS["var_ike_saml_port"])
 
