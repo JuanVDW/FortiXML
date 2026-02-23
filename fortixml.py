@@ -171,7 +171,7 @@ if render_clicked:
         networkid_int = 0
 
     var_use_external_browser_bool = bool(st.session_state["use_external_browser"]) if is_saml else False
-    var_ike_saml_port = int(st.session_state["ike_saml_port"]) if is_saml else int(DEFAULTS["var_ike_saml_port"])
+    var_ike_saml_port = int(st.session_state["ike_saml_port"]) if is_saml else 0
 
     values = {
         "var_name": st.session_state["var_name"],
