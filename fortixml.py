@@ -80,20 +80,26 @@ with st.form("xml_form", border=True):
         )
 
     with tab_auth:
-        auth_type = st.selectbox(
+        AUTH_OPTIONS = {
+            "local": "Local",
+            "ldap": "LDAP",
+            "radius": "RADIUS",
+            "saml": "SAML",
+        }
+    
+        auth_key = st.selectbox(
             "Authentication type",
-            ["Local", "LDAP", "RADIUS", "SAML"],
-            index=0,
+            options=list(AUTH_OPTIONS.keys()),
+            format_func=lambda k: AUTH_OPTIONS[k],
+            index=3,  # default to SAML (change if you want)
+            key="auth_key",
         )
     
-        is_saml = (auth_type == "SAML")
+        is_saml = (auth_key == "saml")
     
-        # SSO enabled flag driven by auth_type:
-        # Local/LDAP/RADIUS => 0
-        # SAML => 1
-        var_sso_enabled_bool = is_saml  # keep as bool for your yn_to_01()
+        # SSO enabled flag driven by auth choice
+        var_sso_enabled_bool = is_saml
     
-        # Only show these when SAML is selected
         if is_saml:
             c1, c2 = st.columns(2)
             with c1:
@@ -101,6 +107,7 @@ with st.form("xml_form", border=True):
                     "Use external browser",
                     value=bool(DEFAULTS["var_use_external_browser"]),
                     help="Stored as 1 (yes) / 0 (no)",
+                    key="use_external_browser",
                 )
             with c2:
                 var_ike_saml_port = st.number_input(
@@ -109,11 +116,12 @@ with st.form("xml_form", border=True):
                     max_value=65535,
                     value=int(DEFAULTS["var_ike_saml_port"]),
                     step=1,
-                ) 
+                    key="ike_saml_port",
+                )
         else:
-            # Not relevant => force safe defaults in XML
+            # Force safe values when not SAML
             var_use_external_browser_bool = False
-            var_ike_saml_port = int(DEFAULTS["var_ike_saml_port"])  # or 443; it won't matter if SSO=0
+            var_ike_saml_port = int(DEFAULTS["var_ike_saml_port"])
 
     with tab_ipsec:
         var_preshared_key = st.text_input("Preshared key", value=DEFAULTS["var_preshared_key"], type="password")
