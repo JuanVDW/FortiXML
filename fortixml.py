@@ -7,27 +7,14 @@ from jinja2 import Template
 
 st.set_page_config(page_title="FortiXML", page_icon="logo.png", layout="centered")
 
-st.markdown("""
-<style>
-/* Hide any small helper text inside forms */
-div[data-testid="stForm"] p,
-div[data-testid="stForm"] small {
-    display: none !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
 TEMPLATE_PATH = Path("template.xml")
-
 
 def extract_template_vars(template_text: str) -> set[str]:
     # Extract {{ var_name }} occurrences (simple + robust enough for your template)
     return set(re.findall(r"{{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}", template_text))
 
-
 def yn_to_01(value: bool) -> int:
     return 1 if value else 0
-
 
 def validate(values: dict) -> list[str]:
     issues = []
@@ -43,7 +30,6 @@ def validate(values: dict) -> list[str]:
     if not values["var_preshared_key"]:
         issues.append("Preshared key is empty (XML will still be generated).")
     return issues
-
 
 # --- Header with logo and title ---
 col1, col2 = st.columns([1, 5])
