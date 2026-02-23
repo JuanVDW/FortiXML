@@ -1,25 +1,20 @@
 import re
-from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
 from jinja2 import Template
 
+# ----------------------------
+# Page config
+# ----------------------------
 st.set_page_config(page_title="FortiXML", page_icon="logo.png", layout="centered")
-
-st.markdown("""
-<style>
-/* Make disabled widgets more visually "masked" */
-div[data-disabled="true"] {
-    opacity: 0.45;
-}
-</style>
-""", unsafe_allow_html=True)
 
 TEMPLATE_PATH = Path("template.xml")
 
+# ----------------------------
+# Helpers
+# ----------------------------
 def extract_template_vars(template_text: str) -> set[str]:
-    # Extract {{ var_name }} occurrences (simple + robust enough for your template)
     return set(re.findall(r"{{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}", template_text))
 
 def yn_to_01(value: bool) -> int:
@@ -40,131 +35,159 @@ def validate(values: dict) -> list[str]:
         issues.append("Preshared key is empty (XML will still be generated).")
     return issues
 
-# --- Header with logo and title ---
+# ----------------------------
+# Header
+# ----------------------------
 col1, col2 = st.columns([1, 5])
-
 with col1:
     st.image("logo.png", width=120)
-
 with col2:
     st.markdown(
         "<h1 style='margin-top: 7px;margin-left:-20px;'>FortiClient XML generator</h1>",
         unsafe_allow_html=True
     )
 
+# ----------------------------
+# Load template
+# ----------------------------
+if not TEMPLATE_PATH.exists():
+    st.error("template.xml not found next to the app.")
+    st.stop()
+
 template_text = TEMPLATE_PATH.read_text(encoding="utf-8", errors="replace")
 template = Template(template_text)
-template_vars = extract_template_vars(template_text)
+_ = extract_template_vars(template_text)  # optional: keep if you want later checks
 
-# ---- UI defaults (from your table) ----
+# ----------------------------
+# Defaults
+# ----------------------------
 DEFAULTS = {
     "var_name": "Acme - IT grp",
     "var_description": "IPSec VPN for Acme IT grp",
     "var_server": "acme.vpn.com",
     "var_preshared_key": "",
-    "var_sso_enabled": 0,            # no
+    "var_sso_enabled": 0,
     "var_ike_saml_port": 443,
-    "var_use_external_browser": 0,   # no
+    "var_use_external_browser": 0,
     "var_networkid": 10,
-    "var_transport_mode": 2,         # Auto
-    "var_enable_local_lan": 0,       # no
+    "var_transport_mode": 2,
+    "var_enable_local_lan": 0,
 }
 
-# Transport mode mapping you gave:
 TRANSPORT_LABEL_TO_VALUE = {"UDP only": 0, "TCP only": 1, "Auto": 2}
 TRANSPORT_VALUE_TO_LABEL = {v: k for k, v in TRANSPORT_LABEL_TO_VALUE.items()}
 
-# ---- Layout ----
-with st.form("xml_form", border=True):
-    tab_general, tab_auth, tab_ipsec = st.tabs(["General", "Authentication", "IPSec"])
+AUTH_OPTIONS = {"local": "Local", "ldap": "LDAP", "radius": "RADIUS", "saml": "SAML"}
 
-    with tab_general:
-        var_name = st.text_input("Name", value=DEFAULTS["var_name"])
-        var_description = st.text_area("Description", value=DEFAULTS["var_description"], height=90)
-        var_server = st.text_input("Server (FQDN/IP)", value=DEFAULTS["var_server"])
-        var_enable_local_lan_bool = st.toggle(
-            "Enable local LAN",
-            value=bool(DEFAULTS["var_enable_local_lan"]),
-            help="Only in case of full tunnel (if needed)",
-        )
+# ----------------------------
+# Initialize session state once
+# ----------------------------
+def init_state():
+    st.session_state.setdefault("var_name", DEFAULTS["var_name"])
+    st.session_state.setdefault("var_description", DEFAULTS["var_description"])
+    st.session_state.setdefault("var_server", DEFAULTS["var_server"])
+    st.session_state.setdefault("var_enable_local_lan_bool", bool(DEFAULTS["var_enable_local_lan"]))
 
-    with tab_auth:
-        AUTH_OPTIONS = {
-            "local": "Local",
-            "ldap": "LDAP",
-            "radius": "RADIUS",
-            "saml": "SAML",
-        }
-    
-        auth_key = st.selectbox(
-            "Authentication type",
-            options=list(AUTH_OPTIONS.keys()),
-            format_func=lambda k: AUTH_OPTIONS[k],
-            index=0,
-            key="auth_key",
-        )
-    
-        is_saml = (auth_key == "saml")
-        var_sso_enabled_bool = is_saml
-    
-        # --- Always render, but disable when not SAML (prevents "ghosting") ---
+    st.session_state.setdefault("auth_key", "local")
+    st.session_state.setdefault("use_external_browser", bool(DEFAULTS["var_use_external_browser"]))
+    st.session_state.setdefault("ike_saml_port", int(DEFAULTS["var_ike_saml_port"]))
+
+    st.session_state.setdefault("var_preshared_key", DEFAULTS["var_preshared_key"])
+    st.session_state.setdefault("var_networkid", str(DEFAULTS["var_networkid"]))  # text to avoid +/- buttons
+    st.session_state.setdefault(
+        "var_transport_mode_label",
+        TRANSPORT_VALUE_TO_LABEL.get(int(DEFAULTS["var_transport_mode"]), "Auto"),
+    )
+
+init_state()
+
+# ----------------------------
+# UI (NO st.form) + Tabs
+# ----------------------------
+tab_general, tab_auth, tab_ipsec = st.tabs(["General", "Authentication", "IPSec"])
+
+with tab_general:
+    st.text_input("Name", key="var_name")
+    st.text_area("Description", height=90, key="var_description")
+    st.text_input("Server (FQDN/IP)", key="var_server")
+    st.toggle(
+        "Enable local LAN",
+        key="var_enable_local_lan_bool",
+        help="Only in case of full tunnel (if needed)",
+    )
+
+with tab_auth:
+    st.selectbox(
+        "Authentication type",
+        options=list(AUTH_OPTIONS.keys()),
+        format_func=lambda k: AUTH_OPTIONS[k],
+        key="auth_key",
+    )
+
+    is_saml = (st.session_state["auth_key"] == "saml")
+
+    if is_saml:
         c1, c2 = st.columns(2)
-    
         with c1:
-            var_use_external_browser_bool = st.toggle(
-                "Use external browser",
-                value=bool(DEFAULTS["var_use_external_browser"]),
-                help="Only relevant for SAML",
-                key="use_external_browser",
-                disabled=not is_saml,
-            )
-    
+            st.toggle("Use external browser", key="use_external_browser")
         with c2:
-            var_ike_saml_port = st.number_input(
+            st.number_input(
                 "IKE SAML port",
                 min_value=1,
                 max_value=65535,
-                value=int(DEFAULTS["var_ike_saml_port"]),
                 step=1,
                 key="ike_saml_port",
-                disabled=not is_saml,
             )
-    
-        # Force safe values in XML when not SAML
-        if not is_saml:
-            var_use_external_browser_bool = False
-            var_ike_saml_port = int(DEFAULTS["var_ike_saml_port"])
+    else:
+        # If not SAML, we just don't render them and we force safe values later in XML
+        st.caption("SAML options are hidden because Authentication type is not SAML.")
 
-    with tab_ipsec:
-        var_preshared_key = st.text_input("Preshared key", value=DEFAULTS["var_preshared_key"], type="password")
-        var_networkid = st.number_input("NetworkID", min_value=0, value=int(DEFAULTS["var_networkid"]), step=1)
+with tab_ipsec:
+    st.text_input("Preshared key", type="password", key="var_preshared_key")
+    st.text_input("NetworkID", key="var_networkid")  # no +/- buttons
+    st.selectbox(
+        "Transport mode",
+        ["Auto", "UDP only", "TCP only"],
+        key="var_transport_mode_label",
+        help="UDP only: 0, TCP only: 1, Auto: 2 (default)",
+    )
 
-        default_transport_label = TRANSPORT_VALUE_TO_LABEL.get(int(DEFAULTS["var_transport_mode"]), "Auto")
-        var_transport_mode_label = st.selectbox(
-            "Transport mode",
-            ["Auto", "UDP only", "TCP only"],
-            index=["Auto", "UDP only", "TCP only"].index(default_transport_label),
-            help="UDP only: 0, TCP only: 1, Auto: 2 (default)",
-        )
+# ----------------------------
+# Render button (outside tabs)
+# ----------------------------
+render_clicked = st.button("✅ Render XML", type="primary", use_container_width=True)
 
-    submitted = st.form_submit_button("✅ Render XML", type="primary", use_container_width=True)
+# ----------------------------
+# Build values + Render + Download
+# ----------------------------
+if render_clicked:
+    auth_key = st.session_state["auth_key"]
+    is_saml = (auth_key == "saml")
 
-# ---- Build values dict ----
-values = {
-    "var_name": var_name,
-    "var_sso_enabled": yn_to_01(var_sso_enabled_bool),
-    "var_ike_saml_port": int(var_ike_saml_port),
-    "var_use_external_browser": yn_to_01(var_use_external_browser_bool),
-    "var_description": var_description,
-    "var_server": var_server,
-    "var_preshared_key": var_preshared_key,
-    "var_networkid": int(var_networkid),
-    "var_transport_mode": TRANSPORT_LABEL_TO_VALUE[var_transport_mode_label],
-    "var_enable_local_lan": yn_to_01(var_enable_local_lan_bool),
-}
+    # Safe conversions
+    try:
+        networkid_int = int(st.session_state["var_networkid"])
+    except ValueError:
+        networkid_int = 0
 
-# ---- Render + Download ----
-if submitted:
+    var_use_external_browser_bool = bool(st.session_state["use_external_browser"]) if is_saml else False
+    var_ike_saml_port = int(st.session_state["ike_saml_port"]) if is_saml else int(DEFAULTS["var_ike_saml_port"])
+
+    values = {
+        "var_name": st.session_state["var_name"],
+        "var_description": st.session_state["var_description"],
+        "var_server": st.session_state["var_server"],
+        "var_preshared_key": st.session_state["var_preshared_key"],
+        "var_networkid": networkid_int,
+        "var_transport_mode": TRANSPORT_LABEL_TO_VALUE.get(st.session_state["var_transport_mode_label"], 2),
+        "var_enable_local_lan": yn_to_01(bool(st.session_state["var_enable_local_lan_bool"])),
+
+        # Derived from auth type
+        "var_sso_enabled": 1 if is_saml else 0,
+        "var_use_external_browser": yn_to_01(var_use_external_browser_bool),
+        "var_ike_saml_port": var_ike_saml_port,
+    }
+
     issues = validate(values)
     if issues:
         st.warning("Some checks raised warnings:")
@@ -175,30 +198,30 @@ if submitted:
 
     rendered_xml = template.render(**values)
 
+    # Filename: keep spaces, no timestamp, avoid illegal chars
     invalid_chars = '<>:"/\\|?*'
-    safe_name = "".join(c for c in var_name.strip() if c not in invalid_chars)
+    safe_name = "".join(c for c in st.session_state["var_name"].strip() if c not in invalid_chars)
     filename = f"{safe_name}.xml" if safe_name else "config.xml"
 
-    col_title, col_btn = st.columns([5, 2])
+    # Make download button red (CSS)
+    st.markdown("""
+    <style>
+    div[data-testid="stDownloadButton"] > button {
+        background-color: #ff4b4b;
+        color: white;
+        border: none;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: #e04343;
+        color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
+    col_title, col_btn = st.columns([5, 2])
     with col_title:
         st.markdown("### XML Preview")
-
     with col_btn:
-        st.markdown("""
-        <style>
-        div[data-testid="stDownloadButton"] > button {
-            background-color: #ff4b4b;
-            color: white;
-            border: none;
-        }
-        div[data-testid="stDownloadButton"] > button:hover {
-            background-color: #e04343;
-            color: white;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
         st.download_button(
             "⬇️ Download XML",
             rendered_xml.encode("utf-8"),
