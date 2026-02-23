@@ -100,6 +100,10 @@ def init_state():
     )
 
 init_state()
+# Track which tabs were visited
+st.session_state.setdefault("visited_general", False)
+st.session_state.setdefault("visited_auth", False)
+st.session_state.setdefault("visited_ipsec", False)
 
 # ----------------------------
 # UI (NO st.form) + Tabs
@@ -107,6 +111,7 @@ init_state()
 tab_general, tab_auth, tab_ipsec = st.tabs(["General", "Authentication", "IPSec"])
 
 with tab_general:
+    st.session_state["visited_general"] = True
     st.text_input("Name", key="var_name")
     st.text_area("Description", height=90, key="var_description")
     st.text_input("Server (FQDN/IP)", key="var_server")
@@ -117,6 +122,7 @@ with tab_general:
     )
 
 with tab_auth:
+    st.session_state["visited_auth"] = True
     st.selectbox(
         "Authentication type",
         options=list(AUTH_OPTIONS.keys()),
@@ -143,6 +149,7 @@ with tab_auth:
         st.caption("SAML options are hidden because Authentication type is not SAML.")
 
 with tab_ipsec:
+    st.session_state["visited_ipsec"] = True
     st.text_input("Preshared key", type="password", key="var_preshared_key")
     st.text_input("NetworkID", key="var_networkid")  # no +/- buttons
     st.selectbox(
@@ -153,9 +160,24 @@ with tab_ipsec:
     )
 
 # ----------------------------
-# Render button (outside tabs)
+# ---- Progress + Render Button Control ----
 # ----------------------------
-render_clicked = st.button("✅ Render XML", type="primary", use_container_width=True)
+
+visited_count = sum([
+    st.session_state["visited_general"],
+    st.session_state["visited_auth"],
+    st.session_state["visited_ipsec"],
+])
+
+st.progress(visited_count / 3)
+
+all_visited = visited_count == 3
+
+if all_visited:
+    render_clicked = st.button("✅ Render XML", type="primary", use_container_width=True)
+else:
+    render_clicked = False
+    st.info("Please open all 3 sections to enable Render.")
 
 # ----------------------------
 # Build values + Render + Download
