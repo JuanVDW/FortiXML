@@ -5,7 +5,7 @@ from pathlib import Path
 import streamlit as st
 from jinja2 import Template
 
-st.set_page_config(page_title="XML Generator", page_icon="🧩", layout="centered")
+st.set_page_config(page_title="FortiXML", page_icon="logo.png", layout="centered")
 
 TEMPLATE_PATH = Path("template.xml")
 
@@ -35,7 +35,7 @@ def validate(values: dict) -> list[str]:
     return issues
 
 
-st.title("🧩 XML configuration generator")
+st.title("🧩 FortiClient XML configuration generator")
 st.caption("Fill the fields → render XML from template.xml → download.")
 
 if not TEMPLATE_PATH.exists():
