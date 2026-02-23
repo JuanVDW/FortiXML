@@ -35,12 +35,17 @@ def validate(values: dict) -> list[str]:
     return issues
 
 
-st.title("🧩 FortiClient XML configuration generator")
-st.caption("Fill the fields → render XML from template.xml → download.")
+# --- Header with logo and title ---
+col1, col2 = st.columns([1, 5])
 
-if not TEMPLATE_PATH.exists():
-    st.error("template.xml not found. Put template.xml next to app.py.")
-    st.stop()
+with col1:
+    st.image("logo.png", width=120)
+
+with col2:
+    st.markdown(
+        "<h1 style='margin-top: 7px;margin-left:-20px;'>FortiClient XML configuration generator</h1>",
+        unsafe_allow_html=True
+    )
 
 template_text = TEMPLATE_PATH.read_text(encoding="utf-8", errors="replace")
 template = Template(template_text)
@@ -128,20 +133,6 @@ values = {
     "var_transport_mode": TRANSPORT_LABEL_TO_VALUE[var_transport_mode_label],
     "var_enable_local_lan": yn_to_01(var_enable_local_lan_bool),
 }
-
-# ---- Template/form consistency check ----
-form_vars = set(values.keys())
-missing_in_form = sorted(template_vars - form_vars)
-unused_in_template = sorted(form_vars - template_vars)
-
-with st.expander("🔎 Template variable check", expanded=False):
-    st.write("Variables found in template.xml:", sorted(template_vars))
-    if missing_in_form:
-        st.error(f"Template variables missing in the form: {missing_in_form}")
-    else:
-        st.success("All template variables are covered by the form ✅")
-    if unused_in_template:
-        st.warning(f"Form variables not used in template.xml: {unused_in_template}")
 
 # ---- Render + Download ----
 if submitted:
