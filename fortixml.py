@@ -7,6 +7,15 @@ from jinja2 import Template
 
 st.set_page_config(page_title="FortiXML", page_icon="logo.png", layout="centered")
 
+st.markdown("""
+<style>
+/* Hide 'Press Enter to submit form' hint */
+div[data-testid="stForm"] small {
+    display: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 TEMPLATE_PATH = Path("template.xml")
 
 
