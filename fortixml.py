@@ -156,14 +156,28 @@ if submitted:
     with col_title:
         st.markdown("### XML Preview")
 
-    with col_btn:
-        st.download_button(
-            label="⬇️ Download XML",
-            data=rendered_xml.encode("utf-8"),
-            file_name=filename,
-            mime="application/xml",
-            use_container_width=True,
-        )
+with col_btn:
+    st.markdown("""
+    <style>
+    div[data-testid="stDownloadButton"] > button {
+        background-color: #ff4b4b;
+        color: white;
+        border: none;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: #e04343;
+        color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.download_button(
+        label="⬇️ Download XML",
+        data=rendered_xml.encode("utf-8"),
+        file_name=filename,
+        mime="application/xml",
+        use_container_width=True,
+    )
 
     # XML preview below
     st.code(rendered_xml, language="xml")
