@@ -7,6 +7,15 @@ from jinja2 import Template
 
 st.set_page_config(page_title="FortiXML", page_icon="logo.png", layout="centered")
 
+st.markdown("""
+<style>
+/* Make disabled widgets more visually "masked" */
+div[data-disabled="true"] {
+    opacity: 0.45;
+}
+</style>
+""", unsafe_allow_html=True)
+
 TEMPLATE_PATH = Path("template.xml")
 
 def extract_template_vars(template_text: str) -> set[str]:
