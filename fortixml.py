@@ -43,7 +43,7 @@ with col1:
 
 with col2:
     st.markdown(
-        "<h1 style='margin-top: 7px;margin-left:-20px;'>FortiClient XML configuration generator</h1>",
+        "<h1 style='margin-top: 7px;margin-left:-20px;'>FortiClient XML generator</h1>",
         unsafe_allow_html=True
     )
 
