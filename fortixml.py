@@ -146,9 +146,9 @@ if submitted:
 
     rendered_xml = template.render(**values)
 
-    ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-    safe_name = "".join(c if c.isalnum() or c in "-_." else "_" for c in var_name.strip())
-    filename = f"{safe_name or 'config'}_{ts}.xml"
+    invalid_chars = '<>:"/\\|?*'
+    safe_name = "".join(c for c in var_name.strip() if c not in invalid_chars)
+    filename = f"{safe_name}.xml" if safe_name else "config.xml"
 
     col_title, col_btn = st.columns([5, 2])
 
