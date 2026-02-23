@@ -156,19 +156,19 @@ if submitted:
         st.markdown("### XML Preview")
 
     with col_btn:
-    st.markdown("""
-    <style>
-    div[data-testid="stDownloadButton"] > button {
-        background-color: #ff4b4b;
-        color: white;
-        border: none;
-    }
-    div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #e04343;
-        color: white;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+        st.markdown("""
+        <style>
+        div[data-testid="stDownloadButton"] > button {
+            background-color: #ff4b4b;
+            color: white;
+            border: none;
+        }
+        div[data-testid="stDownloadButton"] > button:hover {
+            background-color: #e04343;
+            color: white;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
         st.download_button(
             "⬇️ Download XML",
