@@ -76,7 +76,7 @@ with st.form("xml_form", border=True):
         var_enable_local_lan_bool = st.toggle(
             "Enable local LAN",
             value=bool(DEFAULTS["var_enable_local_lan"]),
-            help="Stored as 1 (yes) / 0 (no)",
+            help="Only in case of full tunnel (if needed)",
         )
 
     with tab_auth:
@@ -91,7 +91,6 @@ with st.form("xml_form", border=True):
             var_use_external_browser_bool = st.toggle(
                 "Use external browser",
                 value=bool(DEFAULTS["var_use_external_browser"]),
-                help="Stored as 1 (yes) / 0 (no)",
             )
 
         var_ike_saml_port = st.number_input(
@@ -99,7 +98,6 @@ with st.form("xml_form", border=True):
             min_value=1,
             max_value=65535,
             value=int(DEFAULTS["var_ike_saml_port"]),
-            step=1,
         )
 
     with tab_ipsec:
