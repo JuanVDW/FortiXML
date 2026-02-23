@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<forticlient_configuration>
+  <partial_configuration>1</partial_configuration>
+  <vpn>
+    <ipsecvpn>
+      <options>
+        <enabled>1</enabled>
+        <beep_if_error>0</beep_if_error>
+        <usewincert>1</usewincert>
+        <use_win_current_user_cert>1</use_win_current_user_cert>
+        <use_win_local_computer_cert>1</use_win_local_computer_cert>
+        <no_dns_registration>1</no_dns_registration>
+        <!-- To be checked -->
+        <block_ipv6>1</block_ipv6>
+        <uselocalcert>0</uselocalcert>
+        <usesmcardcert>1</usesmcardcert>
+        <enable_udp_checksum>0</enable_udp_checksum>
+        <!-- To be checked -->
+        <mtu_size>1300</mtu_size>
+        <disable_default_route>0</disable_default_route>
+        <show_auth_cert_only>0</show_auth_cert_only>
+        <disallow_invalid_server_certificate>0</disallow_invalid_server_certificate>
+        <check_for_cert_private_key>0</check_for_cert_private_key>
+        <enhanced_key_usage_mandatory>0</enhanced_key_usage_mandatory>
+        <prefer_ipsecvpn_dns>1</prefer_ipsecvpn_dns>
+        <disconnect_on_log_off>1</disconnect_on_log_off>
+      </options>
+      <connections>
+        <connection>
+          <!-- Example: Acme - IT grp -->
+          <name>{{var_name}}</name>
+          <type>manual</type>
+          <ike_settings>
+            <keep_fqdn_resolution_consistency>0</keep_fqdn_resolution_consistency>
+            <version>2</version>
+            <!-- For LDAP auth. To be checked -->
+            <eap_method>1</eap_method>
+            <!-- If SAML auth: 1, others auth: 0 -->
+            <sso_enabled>{{var_sso_enabled}}</sso_enabled>
+            <!-- Default: 443 -->
+            <ike_saml_port>{{var_ike_saml_port}}</ike_saml_port>
+            <!-- Default: 0 -->
+            <use_external_browser>{{var_use_external_browser}}</use_external_browser>
+            <prompt_certificate>0</prompt_certificate>
+            <!-- Example: IPSec VPN for Acme IT grp -->
+            <description>{{var_description}}</description>
+            <!-- Example: acme.teleworking.proximus.com -->
+            <server>{{var_server}}</server>
+            <authentication_method>Preshared Key</authentication_method>
+            <auth_key></auth_key>
+            <auth_data>
+              <!-- PSK -->
+              <preshared_key>{{var_preshared_key}}</preshared_key>
+            </auth_data>
+            <mode>aggressive</mode>
+            <dhgroup>20</dhgroup>
+            <key_life>86400</key_life>
+            <localid></localid>
+            <nat_traversal>1</nat_traversal>
+            <!-- Default: 10 -->
+            <networkid>{{var_networkid}}</networkid>
+            <sase_mode>0</sase_mode>
+            <!-- UDP only: 0, TCP only: 1, Auto: 2 (default) -->
+            <transport_mode>{{var_transport_mode}}</transport_mode>
+            <udp_port>500</udp_port>
+            <tcp_port>443</tcp_port>
+            <mode_config>1</mode_config>
+            <!-- Default: 0, 1 only in case of full tunnel (if needed) -->
+            <enable_local_lan>{{var_enable_local_lan}}</enable_local_lan>
+            <session_resume>0</session_resume>
+            <!-- To be checked -->
+            <failover_sslvpn_connection></failover_sslvpn_connection>
+            <enable_ike_fragmentation>0</enable_ike_fragmentation>
+            <dpd>1</dpd>
+            <xauth>
+              <enabled>1</enabled>
+              <prompt_username>0</prompt_username>
+              <username></username>
+              <password></password>
+            </xauth>
+            <proposals>
+              <proposal>AES256|SHA256</proposal>
+            </proposals>
+          </ike_settings>
+          <ipsec_settings>
+            <remote_networks></remote_networks>
+            <ipv4_split_exclude_networks></ipv4_split_exclude_networks>
+            <dhgroup>20</dhgroup>
+            <key_life_type>seconds</key_life_type>
+            <key_life_seconds>43200</key_life_seconds>
+            <key_life_Kbytes>5120</key_life_Kbytes>
+            <replay_detection>1</replay_detection>
+            <pfs>1</pfs>
+            <use_vip>1</use_vip>
+            <virtualip>
+              <type>modeconfig</type>
+              <ip></ip>
+              <mask></mask>
+              <dnsserver></dnsserver>
+              <winserver></winserver>
+            </virtualip>
+            <proposals>
+              <proposal>AES256|SHA256SHA256</proposal>
+            </proposals>
+          </ipsec_settings>
+          <tags>
+            <allowed></allowed>
+            <prohibited></prohibited>
+          </tags>
+          <ui>
+            <show_passcode>0</show_passcode>
+            <show_remember_password>0</show_remember_password>
+            <show_alwaysup>0</show_alwaysup>
+            <show_autoconnect>0</show_autoconnect>
+            <save_username>0</save_username>
+          </ui>
+        </connection>
+      </connections>
+    </ipsecvpn>
+  </vpn>
+</forticlient_configuration>
