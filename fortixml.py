@@ -203,29 +203,29 @@ if render_clicked:
     safe_name = "".join(c for c in st.session_state["var_name"].strip() if c not in invalid_chars)
     filename = f"{safe_name}.xml" if safe_name else "config.xml"
 
-# --- Make download button red ---
-st.markdown("""
-<style>
-div[data-testid="stDownloadButton"] > button {
-    background-color: #ff4b4b;
-    color: white;
-    border: none;
-}
-div[data-testid="stDownloadButton"] > button:hover {
-    background-color: #e04343;
-    color: white;
-}
-</style>
-""", unsafe_allow_html=True)
-
-st.download_button(
-    "⬇️ Download XML",
-    rendered_xml.encode("utf-8"),
-    file_name=filename,
-    mime="application/xml",
-    use_container_width=True,
-)
-
-# --- Preview inside expander ---
-with st.expander("🔎 Show XML Preview", expanded=False):
-    st.code(rendered_xml, language="xml")
+    # --- Make download button red ---
+    st.markdown("""
+    <style>
+    div[data-testid="stDownloadButton"] > button {
+        background-color: #ff4b4b;
+        color: white;
+        border: none;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: #e04343;
+        color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.download_button(
+        "⬇️ Download XML",
+        rendered_xml.encode("utf-8"),
+        file_name=filename,
+        mime="application/xml",
+        use_container_width=True,
+    )
+    
+    # --- Preview inside expander ---
+    with st.expander("🔎 Show XML Preview", expanded=False):
+        st.code(rendered_xml, language="xml")
