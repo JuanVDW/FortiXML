@@ -146,17 +146,22 @@ if submitted:
 
     rendered_xml = template.render(**values)
 
-    st.subheader("Preview")
-    st.code(rendered_xml, language="xml")
-
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
     safe_name = "".join(c if c.isalnum() or c in "-_." else "_" for c in var_name.strip())
     filename = f"{safe_name or 'config'}_{ts}.xml"
 
+col_title, col_btn = st.columns([5, 2])
+
+with col_title:
+    st.markdown("### XML Preview")
+
+with col_btn:
     st.download_button(
-        label="⬇️ Download XML",
-        data=rendered_xml.encode("utf-8"),
+        "⬇️ Download XML",
+        rendered_xml.encode("utf-8"),
         file_name=filename,
         mime="application/xml",
         use_container_width=True,
     )
+
+st.code(rendered_xml, language="xml")
