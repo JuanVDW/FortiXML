@@ -27,7 +27,7 @@ def validate(values: dict) -> list[str]:
     if not values["var_server"].strip():
         issues.append("Server is empty.")
     port = int(values["var_ike_saml_port"])
-    if not (1 <= port <= 65535):
+    if not (0 <= port <= 65535):
         issues.append("IKE SAML port must be between 1 and 65535.")
     if int(values["var_networkid"]) < 0:
         issues.append("NetworkID should be >= 0.")
@@ -88,7 +88,7 @@ def init_state():
     st.session_state.setdefault("var_server", DEFAULTS["var_server"])
     st.session_state.setdefault("var_enable_local_lan_bool", bool(DEFAULTS["var_enable_local_lan"]))
 
-    st.session_state.setdefault("auth_key", "local")
+    st.session_state.setdefault("auth_key", "saml")
     st.session_state.setdefault("use_external_browser", bool(DEFAULTS["var_use_external_browser"]))
     st.session_state.setdefault("ike_saml_port", int(DEFAULTS["var_ike_saml_port"]))
 
@@ -133,7 +133,7 @@ with tab_auth:
         with c2:
             st.number_input(
                 "IKE SAML port",
-                min_value=1,
+                min_value=0,
                 max_value=65535,
                 step=1,
                 key="ike_saml_port",
