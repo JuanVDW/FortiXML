@@ -91,35 +91,37 @@ with st.form("xml_form", border=True):
             "Authentication type",
             options=list(AUTH_OPTIONS.keys()),
             format_func=lambda k: AUTH_OPTIONS[k],
-            index=3,  # default to SAML (change if you want)
+            index=0,
             key="auth_key",
         )
     
         is_saml = (auth_key == "saml")
-    
-        # SSO enabled flag driven by auth choice
         var_sso_enabled_bool = is_saml
     
+        saml_area = st.empty()  # dynamic area that we can clear
+    
         if is_saml:
-            c1, c2 = st.columns(2)
-            with c1:
-                var_use_external_browser_bool = st.toggle(
-                    "Use external browser",
-                    value=bool(DEFAULTS["var_use_external_browser"]),
-                    help="Stored as 1 (yes) / 0 (no)",
-                    key="use_external_browser",
-                )
-            with c2:
-                var_ike_saml_port = st.number_input(
-                    "IKE SAML port",
-                    min_value=1,
-                    max_value=65535,
-                    value=int(DEFAULTS["var_ike_saml_port"]),
-                    step=1,
-                    key="ike_saml_port",
-                )
+            with saml_area.container():
+                c1, c2 = st.columns(2)
+                with c1:
+                    var_use_external_browser_bool = st.toggle(
+                        "Use external browser",
+                        value=bool(DEFAULTS["var_use_external_browser"]),
+                        help="Stored as 1 (yes) / 0 (no)",
+                        key="use_external_browser",
+                    )
+                with c2:
+                    var_ike_saml_port = st.number_input(
+                        "IKE SAML port",
+                        min_value=1,
+                        max_value=65535,
+                        value=int(DEFAULTS["var_ike_saml_port"]),
+                        step=1,
+                        key="ike_saml_port",
+                    )
         else:
-            # Force safe values when not SAML
+            # Clear the area (hides UI) and force safe values
+            saml_area.empty()
             var_use_external_browser_bool = False
             var_ike_saml_port = int(DEFAULTS["var_ike_saml_port"])
 
