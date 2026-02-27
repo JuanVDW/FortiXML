@@ -211,7 +211,7 @@ if render_clicked:
         border: none;
     }
     div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #e04343;
+        background-color: #ff2b2b;
         color: white;
     }
     </style>
