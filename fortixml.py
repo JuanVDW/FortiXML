@@ -106,20 +106,23 @@ tab_general, tab_auth, tab_ipsec = st.tabs(["General", "Authentication", "IPSec"
 
 with tab_general:
     st.text_input("Name", key="var_name")
-    st.text_area("Description", height=90, key="var_description")
+    st.text_area("Description", key="var_description")
     st.text_input("Server (FQDN/IP)", key="var_server")
     st.toggle(
         "Enable local LAN",
         key="var_enable_local_lan_bool",
-        help="Only in case of full tunnel (if needed)",
+        help="Only in case of full tunneling (and if needed)",
     )
 
 with tab_auth:
-    st.toggle("SSO enabled", key="var_sso_enabled_bool")
+    st.toggle(
+        "SSO enabled", 
+        key="var_sso_enabled_bool",
+        help="If authentication via SAML is used",
+    )
 
     is_saml = bool(st.session_state["var_sso_enabled_bool"])
 
-    # ✅ FIX: when enabling SSO, restore default port 443 if it was forced to 0
     if is_saml and int(st.session_state.get("ike_saml_port", 0)) == 0:
         st.session_state["ike_saml_port"] = 443
 
@@ -136,7 +139,6 @@ with tab_auth:
                 key="ike_saml_port",
             )
     else:
-        # Force safe defaults when SSO is disabled
         st.session_state["use_external_browser"] = False
         st.session_state["ike_saml_port"] = 0
 
@@ -147,7 +149,7 @@ with tab_ipsec:
         "Transport mode",
         ["Auto", "UDP only", "TCP only"],
         key="var_transport_mode_label",
-        help="UDP only: 0, TCP only: 1, Auto: 2 (default)",
+        help="UDP 500/4500, TCP 443, Auto: UDP with TCP fallback",
     )
 
 # ----------------------------
