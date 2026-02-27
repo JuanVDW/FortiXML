@@ -30,7 +30,7 @@ def validate(values: dict) -> list[str]:
     if not (0 <= port <= 65535):
         issues.append("IKE SAML port must be between 1 and 65535.")
     if int(values["var_networkid"]) < 0:
-        issues.append("NetworkID should be >= 0.")
+        issues.append("NetworkID should be > 0.")
     if not values["var_preshared_key"]:
         issues.append("Preshared key is empty (XML will still be generated).")
     return issues
@@ -56,7 +56,6 @@ if not TEMPLATE_PATH.exists():
 
 template_text = TEMPLATE_PATH.read_text(encoding="utf-8", errors="replace")
 template = Template(template_text)
-_ = extract_template_vars(template_text)  # optional: keep if you want later checks
 
 # ----------------------------
 # Defaults
@@ -66,12 +65,12 @@ DEFAULTS = {
     "var_description": "IPSec VPN for Acme IT grp",
     "var_server": "acme.vpn.com",
     "var_preshared_key": "",
-    "var_sso_enabled": 0,
     "var_ike_saml_port": 443,
     "var_use_external_browser": 0,
     "var_networkid": 10,
-    "var_transport_mode": 2,
-    "var_enable_local_lan": 0,
+    "var_transport_mode_label": "Auto",
+    "var_enable_local_lan_bool": False,
+    "var_sso_enabled_bool": False,
 }
 
 TRANSPORT_LABEL_TO_VALUE = {
@@ -166,26 +165,19 @@ render_clicked = st.button("✅ Render XML", type="primary", use_container_width
 # Build values + Render + Download
 # ----------------------------
 if render_clicked:
-    auth_key = st.session_state["auth_key"]
     is_saml = bool(st.session_state["var_sso_enabled_bool"])
-
-    networkid_int = int(st.session_state["var_networkid"])
-
-    var_use_external_browser_bool = bool(st.session_state["use_external_browser"]) if is_saml else False
-   
-    var_ike_saml_port = int(st.session_state["ike_saml_port"]) if is_saml else 0
 
     values = {
         "var_name": st.session_state["var_name"],
         "var_description": st.session_state["var_description"],
         "var_server": st.session_state["var_server"],
         "var_preshared_key": st.session_state["var_preshared_key"],
-        "var_networkid": networkid_int,
+        "var_networkid": int(st.session_state["var_networkid"]) ,
         "var_transport_mode": TRANSPORT_LABEL_TO_VALUE.get(st.session_state["var_transport_mode_label"], 2),
         "var_enable_local_lan": yn_to_01(bool(st.session_state["var_enable_local_lan_bool"])),
         "var_sso_enabled": yn_to_01(is_saml),
-        "var_use_external_browser": yn_to_01(var_use_external_browser_bool),
-        "var_ike_saml_port": var_ike_saml_port,
+        "var_use_external_browser": yn_to_01(bool(st.session_state["use_external_browser"]) if is_saml else False),
+        "var_ike_saml_port": int(st.session_state["ike_saml_port"]) if is_saml else 0,
     }
 
     issues = validate(values)
