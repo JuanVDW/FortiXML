@@ -131,12 +131,10 @@ with tab_auth:
         with c1:
             st.toggle("Use external browser", key="use_external_browser")
         with c2:
-            st.number_input(
+            st.text_input(
                 "IKE SAML port",
-                min_value=0,
-                max_value=65535,
-                step=1,
                 key="ike_saml_port",
+                help="Default: 443"
             )
     else:
         st.session_state["use_external_browser"] = False
@@ -149,7 +147,7 @@ with tab_ipsec:
         "Transport mode",
         ["Auto", "UDP only", "TCP only"],
         key="var_transport_mode_label",
-        help="UDP 500/4500, TCP 443, Auto: UDP with TCP fallback",
+        help="UDP only, TCP only, or Auto: UDP with TCP fallback",
     )
 
 # ----------------------------
@@ -164,14 +162,17 @@ if render_clicked:
     auth_key = st.session_state["auth_key"]
     is_saml = bool(st.session_state["var_sso_enabled_bool"])
 
-    # Safe conversions
     try:
         networkid_int = int(st.session_state["var_networkid"])
     except ValueError:
         networkid_int = 0
 
     var_use_external_browser_bool = bool(st.session_state["use_external_browser"]) if is_saml else False
-    var_ike_saml_port = int(st.session_state["ike_saml_port"]) if is_saml else 0
+   
+    try:
+        var_ike_saml_port = int(st.session_state["ike_saml_port"]) if is_saml else 0
+    except ValueError:
+        var_ike_saml_port = 0
 
     values = {
         "var_name": st.session_state["var_name"],
@@ -196,7 +197,6 @@ if render_clicked:
 
     rendered_xml = template.render(**values)
 
-    # Filename: keep spaces, no timestamp, avoid illegal chars
     invalid_chars = '<>:"/\\|?*'
     safe_name = "".join(c for c in st.session_state["var_name"].strip() if c not in invalid_chars)
     filename = f"{safe_name}.xml" if safe_name else "config.xml"
