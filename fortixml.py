@@ -95,10 +95,7 @@ def init_state():
 
     st.session_state.setdefault("var_preshared_key", DEFAULTS["var_preshared_key"])
     st.session_state.setdefault("var_networkid", str(DEFAULTS["var_networkid"]))  # text to avoid +/- buttons
-    st.session_state.setdefault(
-        "var_transport_mode_label",
-        TRANSPORT_VALUE_TO_LABEL.get(int(DEFAULTS["var_transport_mode"]), "Auto"),
-    )
+    st.session_state.setdefault("var_transport_mode_label", "Auto")
 
 init_state()
 
