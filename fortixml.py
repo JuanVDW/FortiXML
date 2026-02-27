@@ -74,10 +74,11 @@ DEFAULTS = {
     "var_enable_local_lan": 0,
 }
 
-TRANSPORT_LABEL_TO_VALUE = {"UDP only": 0, "TCP only": 1, "Auto": 2}
-TRANSPORT_VALUE_TO_LABEL = {v: k for k, v in TRANSPORT_LABEL_TO_VALUE.items()}
-
-AUTH_OPTIONS = {"local": "Local", "ldap": "LDAP", "radius": "RADIUS", "saml": "SAML"}
+TRANSPORT_LABEL_TO_VALUE = {
+    "UDP only": 0,
+    "TCP only": 1,
+    "Auto": 2
+}
 
 # ----------------------------
 # Initialize session state once
@@ -117,10 +118,13 @@ with tab_general:
     )
 
 with tab_auth:
-    # SSO toggle (0/1 in XML)
     st.toggle("SSO enabled", key="var_sso_enabled_bool")
 
     is_saml = bool(st.session_state["var_sso_enabled_bool"])
+
+    # ✅ FIX: when enabling SSO, restore default port 443 if it was forced to 0
+    if is_saml and int(st.session_state.get("ike_saml_port", 0)) == 0:
+        st.session_state["ike_saml_port"] = 443
 
     if is_saml:
         c1, c2 = st.columns(2)
