@@ -86,8 +86,8 @@ def init_state():
     st.session_state.setdefault("var_name", DEFAULTS["var_name"])
     st.session_state.setdefault("var_description", DEFAULTS["var_description"])
     st.session_state.setdefault("var_server", DEFAULTS["var_server"])
-    st.session_state.setdefault("var_enable_local_lan_bool", bool(DEFAULTS["var_enable_local_lan"]))
-
+    st.session_state.setdefault("var_sso_enabled_bool", False)
+    
     st.session_state.setdefault("auth_key", "saml")
     st.session_state.setdefault("use_external_browser", bool(DEFAULTS["var_use_external_browser"]))
     st.session_state.setdefault("ike_saml_port", int(DEFAULTS["var_ike_saml_port"]))
@@ -117,14 +117,10 @@ with tab_general:
     )
 
 with tab_auth:
-    st.selectbox(
-        "Authentication type",
-        options=list(AUTH_OPTIONS.keys()),
-        format_func=lambda k: AUTH_OPTIONS[k],
-        key="auth_key",
-    )
+    # SSO toggle (0/1 in XML)
+    st.toggle("SSO enabled", key="var_sso_enabled_bool")
 
-    is_saml = (st.session_state["auth_key"] == "saml")
+    is_saml = bool(st.session_state["var_sso_enabled_bool"])
 
     if is_saml:
         c1, c2 = st.columns(2)
@@ -139,8 +135,9 @@ with tab_auth:
                 key="ike_saml_port",
             )
     else:
-        # If not SAML, we just don't render them and we force safe values later in XML
-        st.caption("SAML options are hidden because Authentication type is not SAML.")
+        # Force safe defaults when SSO is disabled
+        st.session_state["use_external_browser"] = False
+        st.session_state["ike_saml_port"] = 0
 
 with tab_ipsec:
     st.text_input("Preshared key", type="password", key="var_preshared_key")
@@ -162,7 +159,7 @@ render_clicked = st.button("✅ Render XML", type="primary", use_container_width
 # ----------------------------
 if render_clicked:
     auth_key = st.session_state["auth_key"]
-    is_saml = (auth_key == "saml")
+    is_saml = bool(st.session_state["var_sso_enabled_bool"])
 
     # Safe conversions
     try:
@@ -181,9 +178,7 @@ if render_clicked:
         "var_networkid": networkid_int,
         "var_transport_mode": TRANSPORT_LABEL_TO_VALUE.get(st.session_state["var_transport_mode_label"], 2),
         "var_enable_local_lan": yn_to_01(bool(st.session_state["var_enable_local_lan_bool"])),
-
-        # Derived from auth type
-        "var_sso_enabled": 1 if is_saml else 0,
+        "var_sso_enabled": yn_to_01(is_saml),
         "var_use_external_browser": yn_to_01(var_use_external_browser_bool),
         "var_ike_saml_port": var_ike_saml_port,
     }
