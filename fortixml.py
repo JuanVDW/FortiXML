@@ -131,6 +131,9 @@ with tab_auth:
         with c2:
             st.number_input(
                 "IKE SAML port",
+                min_value=0,
+                max_value=65535,
+                step=1,
                 key="ike_saml_port",
                 help="Default: 443"
             )
@@ -140,7 +143,13 @@ with tab_auth:
 
 with tab_ipsec:
     st.text_input("Preshared key", type="password", key="var_preshared_key")
-    st.number_input("NetworkID", key="var_networkid") 
+    st.number_input(
+        "NetworkID",
+        min_value=0,
+        max_value=255,
+        step=1,   
+        key="var_networkid"
+    ) 
     st.selectbox(
         "Transport mode",
         ["Auto", "UDP only", "TCP only"],
