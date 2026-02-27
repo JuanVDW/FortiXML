@@ -206,13 +206,12 @@ if render_clicked:
     st.markdown("""
     <style>
     div[data-testid="stDownloadButton"] > button {
-        background-color: #ff4b4b;
+        background-color: var(--primary-color);
         color: white;
-        border: none;
     }
+
     div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #ff2b2b;
-        color: white;
+        filter: brightness(90%);
     }
     </style>
     """, unsafe_allow_html=True)
