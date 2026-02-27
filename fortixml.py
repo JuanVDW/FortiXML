@@ -104,7 +104,7 @@ tab_general, tab_auth, tab_ipsec = st.tabs(["General", "Authentication", "IPSec"
 
 with tab_general:
     st.text_input("Name", key="var_name")
-    st.text_area("Description", key="var_description")
+    st.text_input("Description", key="var_description")
     st.text_input("Server (FQDN/IP)", key="var_server")
     st.toggle(
         "Enable local LAN",
@@ -206,12 +206,13 @@ if render_clicked:
     st.markdown("""
     <style>
     div[data-testid="stDownloadButton"] > button {
-        background-color: var(--primary-color);
+        background-color: #ff4b4b;
         color: white;
+        border: none;
     }
-
     div[data-testid="stDownloadButton"] > button:hover {
-        filter: brightness(90%);
+        background-color: #ff2b2b;
+        color: white;
     }
     </style>
     """, unsafe_allow_html=True)
