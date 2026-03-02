@@ -11,6 +11,25 @@ st.set_page_config(page_title="FortiXML", page_icon="logo.png", layout="centered
 
 TEMPLATE_PATH = Path("template.xml")
 
+DEFAULTS = {
+    "var_name": "Acme - IT grp",
+    "var_description": "IPSec VPN for Acme IT grp",
+    "var_server": "acme.vpn.com",
+    "var_preshared_key": "",
+    "var_ike_saml_port": 443,
+    "var_use_external_browser": 0,
+    "var_networkid": 10,
+    "var_transport_mode_label": "Auto",
+    "var_enable_local_lan_bool": False,
+    "var_sso_enabled_bool": False,
+}
+
+TRANSPORT_LABEL_TO_VALUE = {
+    "UDP only": 0,
+    "TCP only": 1,
+    "Auto": 2
+}
+
 # ----------------------------
 # Helpers
 # ----------------------------
@@ -35,6 +54,29 @@ def validate(values: dict) -> list[str]:
         issues.append("Preshared key is empty (XML will still be generated).")
     return issues
 
+def inject_download_css() -> None:
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stDownloadButton"] > button {
+            background-color: #ff4b4b;
+            color: white;
+            border: none;
+        }
+        div[data-testid="stDownloadButton"] > button:hover {
+            background-color: #ff2b2b;
+            color: white;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def sanitize_filename(name: str) -> str:
+    invalid_chars = '<>:"/\\|?*'
+    safe = "".join(c for c in name.strip() if c not in invalid_chars)
+    return f"{safe}.xml" if safe else "config.xml"
+
 # ----------------------------
 # Header
 # ----------------------------
@@ -58,28 +100,6 @@ template_text = TEMPLATE_PATH.read_text(encoding="utf-8", errors="replace")
 template = Template(template_text)
 
 # ----------------------------
-# Defaults
-# ----------------------------
-DEFAULTS = {
-    "var_name": "Acme - IT grp",
-    "var_description": "IPSec VPN for Acme IT grp",
-    "var_server": "acme.vpn.com",
-    "var_preshared_key": "",
-    "var_ike_saml_port": 443,
-    "var_use_external_browser": 0,
-    "var_networkid": 10,
-    "var_transport_mode_label": "Auto",
-    "var_enable_local_lan_bool": False,
-    "var_sso_enabled_bool": False,
-}
-
-TRANSPORT_LABEL_TO_VALUE = {
-    "UDP only": 0,
-    "TCP only": 1,
-    "Auto": 2
-}
-
-# ----------------------------
 # Initialize session state once
 # ----------------------------
 def init_state():
@@ -97,7 +117,7 @@ def init_state():
 init_state()
 
 # ----------------------------
-# UI (NO st.form) + Tabs
+# UI + Tabs
 # ----------------------------
 tab_general, tab_auth, tab_ipsec = st.tabs(["General", "Authentication", "IPSec"])
 
@@ -157,12 +177,12 @@ with tab_ipsec:
     )
 
 # ----------------------------
-# Render button (outside tabs)
+# Render button
 # ----------------------------
 render_clicked = st.button("✅ Render XML", type="primary", use_container_width=True)
 
 # ----------------------------
-# Build values + Render + Download
+# Render + Download + Preview
 # ----------------------------
 if render_clicked:
     is_saml = bool(st.session_state["var_sso_enabled_bool"])
@@ -191,23 +211,9 @@ if render_clicked:
     rendered_xml = template.render(**values)
 
     invalid_chars = '<>:"/\\|?*'
-    safe_name = "".join(c for c in st.session_state["var_name"].strip() if c not in invalid_chars)
-    filename = f"{safe_name}.xml" if safe_name else "config.xml"
+    filename = sanitize_filename(st.session_state["var_name"])
 
-    # --- Make download button red ---
-    st.markdown("""
-    <style>
-    div[data-testid="stDownloadButton"] > button {
-        background-color: #ff4b4b;
-        color: white;
-        border: none;
-    }
-    div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #ff2b2b;
-        color: white;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    inject_download_css()
 
     st.download_button(
         "⬇️ Download XML",
