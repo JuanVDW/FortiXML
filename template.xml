@@ -100,7 +100,7 @@
               <winserver></winserver>
             </virtualip>
             <proposals>
-              <proposal>AES256|SHA256SHA256</proposal>
+              <proposal>AES256|SHA256</proposal>
             </proposals>
           </ipsec_settings>
           <tags>
@@ -118,4 +118,5 @@
       </connections>
     </ipsecvpn>
   </vpn>
+
 </forticlient_configuration>
